@@ -1,7 +1,6 @@
 'use strict';
 var fs = require('fs');
 var Promise = require('bluebird');
-var tinify = require('tinify');
 
 exports.readDir = function(dir) {
     return new Promise(function(resolve, reject) {
@@ -30,14 +29,14 @@ exports.readFile = function(fileDir) {
     });
 };
 
-exports.compressImg = function(fileInfo) {
+exports.compressImg = function(tinify,fileInfo) {
     return new Promise(function(resolve, reject) {
         tinify.fromBuffer(fileInfo.data).toBuffer(function(err, resultData) {
             if (err) {
                 reject(err);
             } else {
                 resolve({
-                    file: fileInfo.dir,
+                    dir: fileInfo.dir,
                     compressionData: resultData
                 });
             }
@@ -48,10 +47,10 @@ exports.compressImg = function(fileInfo) {
 
 exports.emitImg = function(compressionImgInfo) {
     return new Promise(function(resolve, reject) {
-        fs.writeFile(compressionImgInfo.dir,compressionImgInfo.resultData,function(err){
-            if(err){
+        fs.writeFile(compressionImgInfo.dir, compressionImgInfo.compressionData, function(err) {
+            if (err) {
                 reject(err);
-            }else{
+            } else {
                 resolve();
             }
         });
