@@ -22,7 +22,7 @@
         "webpack tinyPNG",
         "tinyPNG webpack"
     ],
-    "author": "Jilong Yu",
+    "author": "jilong yu",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/skyujilong/tinyPNG-webpack/issues"
