@@ -13,7 +13,7 @@ a img compress plugin use with tinyPNG for webpack.
 ## Example Webpack Config
 
 ```javascript
-var tinyPngWebpackPlugin = require('tinyPNG-webpack');
+var tinyPngWebpackPlugin = require('tinypng-webpack-plugin');
 
     //in your webpack plugins array
     module.exports = {

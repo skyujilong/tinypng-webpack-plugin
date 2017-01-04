@@ -1,5 +1,5 @@
 {
-    "name": "tinyPNG-webpack",
+    "name": "tinypng-webpack-plugin",
     "version": "0.0.1",
     "description": "a webpack plugin use tinyPNG",
     "main": "index.js",
@@ -22,7 +22,7 @@
         "webpack tinyPNG",
         "tinyPNG webpack"
     ],
-    "author": "jilong yu",
+    "author": "Jilong Yu",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/skyujilong/tinyPNG-webpack/issues"
