@@ -1,0 +1,26 @@
+{
+  "name": "tinyPNG-webpack",
+  "version": "0.0.1",
+  "description": "a webpack plugin use tinyPNG",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyujilong/tinyPNG-webpack.git"
+  },
+  "keywords": [
+    "webpack",
+    "tinyPNG",
+    "webpack tinyPNG",
+    "tinyPNG webpack"
+  ],
+  "author": "Jilong Yu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skyujilong/tinyPNG-webpack/issues"
+  },
+  "homepage": "https://github.com/skyujilong/tinyPNG-webpack#readme"
+}
