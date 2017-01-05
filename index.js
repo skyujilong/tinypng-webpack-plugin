@@ -2,7 +2,6 @@
 var colors = require('colors');
 var path = require('path');
 var _ = require('lodash');
-var tinify = require('tinify');
 var readDir = require('./src/compression.js').readDir;
 var readFile = require('./src/compression.js').readFile;
 var compressImg = require('./src/compression.js').compressImg;
@@ -15,13 +14,16 @@ function TinyPNGPlugin(options) {
         ext: ['png', 'jpeg', 'jpg']
     }, options);
 
-    if(!this.options.key){
+    if (!this.options.key) {
         throw new Error('need tinyPNG key');
+    }
+
+    if (_.isString(this.options.key)) {
+        this.options.key = [this.options.key];
     }
 
     //正则表达式筛选图片
     this.reg = new RegExp("\.(" + this.options.ext.join('|') + ')$', 'i');
-    tinify.key = this.options.key;
 }
 
 TinyPNGPlugin.prototype.apply = function(compiler) {
@@ -57,7 +59,7 @@ TinyPNGPlugin.prototype.upload = function(targetImgDir, compilation, callback) {
     var imgCount = 0,
         allCount = 0,
         _self = this;
-    console.log('\n');//换行
+    console.log('\n'); //换行
     _.forEach(targetImgDir, function(imgDir) {
         readDir(imgDir).then(function(files) {
             var promiseList = [];
@@ -67,7 +69,12 @@ TinyPNGPlugin.prototype.upload = function(targetImgDir, compilation, callback) {
                     imgCount++;
                     promiseList.push(_self.compress(path.join(imgDir, file), function() {
                         imgCount--;
-                        console.log(colors.yellow('tinyPNG-webpack: img compress process is ' + (allCount - imgCount) + '/' + allCount));
+                        console.log(colors.yellow('tinyPNG-webpack-plugin: img compress process is ' + (allCount - imgCount) + '/' + allCount));
+                    }).catch(function(e) {
+                        //AccountError 用户认证失败
+                        imgCount--;
+                        console.log(colors.red('tinyPNG-webpack-plugin:' + file + ', compress error'));
+                        compilation.errors.push(e);
                     }));
                 }
             });
@@ -84,8 +91,9 @@ TinyPNGPlugin.prototype.upload = function(targetImgDir, compilation, callback) {
     });
 };
 TinyPNGPlugin.prototype.compress = function(imgDir, cb) {
+    var _self = this;
     return readFile(imgDir).then(function(ImgFileInfo) {
-        return compressImg(tinify, ImgFileInfo);
+        return compressImg(_self.options.key, ImgFileInfo);
     }).then(function(compressImgInfo) {
         return emitImg(compressImgInfo);
     }).then(function() {

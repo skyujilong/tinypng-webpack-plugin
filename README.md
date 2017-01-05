@@ -28,7 +28,7 @@ var tinyPngWebpackPlugin = require('tinypng-webpack-plugin');
 ## Usage
 ```javascript
 new tinyPngWebpackPlugin({
-    key:"your tinyPNG key",
+    key:"your tinyPNG key",//can be Array, eg:['your key 1','your key 2'....]
     relativePath:"./img/",//can be array,is relative path to output.puth
     ext: ['png', 'jpeg', 'jpg']//img ext name
 })
