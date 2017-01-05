@@ -15,7 +15,7 @@ function TinyPNGPlugin(options) {
         ext: ['png', 'jpeg', 'jpg']
     }, options);
 
-    if(!!this.options.key){
+    if(!this.options.key){
         throw new Error('need tinyPNG key');
     }
 
