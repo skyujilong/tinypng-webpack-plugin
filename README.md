@@ -2,7 +2,7 @@
 
 a img compress plugin use with tinyPNG for webpack.
 
-## get tinyPNG key
+## Get TinyPNG key
 
 [link](https://tinypng.com/developers)
 
@@ -38,7 +38,7 @@ new tinyPngWebpackPlugin({
 * relativePath: not Required, to your img dir,relative to your webpack output path.
 * ext: not Required, to be compress img ext name.
 
-### defaults Options
+### Defaults Options
 ```javascript
     {
         key:'',
