@@ -7,10 +7,12 @@ var readFile = require('./src/compression.js').readFile;
 var compressImg = require('./src/compression.js').compressImg;
 var emitImg = require('./src/compression.js').emitImg;
 
+const uploader = require('./src/uploader.js');
+
+
 function TinyPNGPlugin(options) {
     this.options = _.assign({
         key: '',
-        relativePath: './',
         ext: ['png', 'jpeg', 'jpg']
     }, options);
 
@@ -29,10 +31,30 @@ function TinyPNGPlugin(options) {
 TinyPNGPlugin.prototype.apply = function(compiler) {
     var _self = this,
         targetImgDir = this.getImgDir(compiler.options.output.path);
-    compiler.plugin('after-emit', function(compilation, callback) {
-        _self.upload(targetImgDir, compilation, callback);
+    //TODO 上传文件操作开始
+    compiler.plugin('emit',(compilation, cb) => {
+        uploader(compilation,).then(() => {
+            cb();
+        }).catch((e) => {
+            console.log(e.stack);
+            cb();
+        });
+        // _.each(compilation.assets,(val,key) => {
+        //     console.log(key);
+        //     val._value = 'test change source'
+        //     //有可能source是一个buffer
+        //     console.log(val.source());
+        //     //console.log(require('util').inspect(val, { depth: null }));
+        // });
+        // console.log(require('util').inspect(compilation.assets, { depth: null }));
+
     });
 };
+
+
+
+
+
 TinyPNGPlugin.prototype.getImgDir = function(outputPath) {
         var imgUrls = [];
         if (_.isString(this.options.relativePath)) {
