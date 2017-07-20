@@ -1,10 +1,7 @@
 'use strict';
 const co = require('co');
-const thunkify = require('thunkify');
 const _ = require('lodash');
 const tinify = require('tinify');
-
-// let tinifyBuffer = thunkify(tinify.fromBuffer(sourceData).toBuffer);
 
 function getImgQueue(list, reg) {
     //对应分成三个队列，开启3个线程进行上传
