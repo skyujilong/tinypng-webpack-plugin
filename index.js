@@ -25,6 +25,7 @@ TinyPNGPlugin.prototype.apply = function(compiler) {
     //上传文件操作开始
     compiler.plugin('emit', (compilation, cb) => {
         uploader(compilation, this.options).then(() => {
+            console.log('done.................');
             cb();
         }).catch((e) => {
             console.log(e.stack);
