@@ -25,6 +25,12 @@ function getImgQueue(list, reg) {
     return queue;
 }
 
+function upload(){
+    return new Promise((resolve,reject) => {
+
+    });
+}
+
 function deImgQueue(queue,keys) {
     let reTryCount = 3;
     return co(function * () {
@@ -33,9 +39,17 @@ function deImgQueue(queue,keys) {
                 return;
             }
             try {
-                let compressImg = yield thunkify(tinify.fromBuffer(fileInfo.source.source()).toBuffer);
+                let compressImg = yield new Promise((resolve,reject) => {
+                    tinify.fromBuffer(fileInfo.source.source()).toBuffer((err,resultData) => {
+                        if(err){
+                            reject(err);
+                        }else{
+                            resolve(resultData);
+                        }
+                    })
+                });
+                //压缩图片成功
                 fileInfo.source._value = compressImg;
-                //TODO 压缩图片成功
             } catch (err) {
                 if (err instanceof tinify.AccountError) {
                     // Verify your API key and account limit.
