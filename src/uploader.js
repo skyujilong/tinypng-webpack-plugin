@@ -13,33 +13,30 @@ function getImgQueue(list, reg) {
     _.each(list, function(val, key) {
         if (reg.exec(key)) {
             //val RawSource 对象
-            queue[count % queue.length].push({
-                name:key,
-                source:val
-            });
+            queue[count % queue.length].push({name: key, source: val});
             count++;
         }
     });
     return queue;
 }
 
-function deImgQueue(queue,keys) {
+function deImgQueue(queue, keys) {
     let reTryCount = 3;
     let uploadErrorList = [];
     return co(function * () {
         function * upload(fileInfo, reTryCount) {
 
-            if(reTryCount < 0){
+            if (reTryCount < 0) {
                 //超过尝试次数
                 uploadErrorList.push(fileInfo.name);
                 return;
             }
             try {
-                let compressImg = yield new Promise((resolve,reject) => {
-                    tinify.fromBuffer(fileInfo.source.source()).toBuffer((err,resultData) => {
-                        if(err){
+                let compressImg = yield new Promise((resolve, reject) => {
+                    tinify.fromBuffer(fileInfo.source.source()).toBuffer((err, resultData) => {
+                        if (err) {
                             reject(err);
-                        }else{
+                        } else {
                             resolve(resultData);
                         }
                     })
@@ -49,7 +46,7 @@ function deImgQueue(queue,keys) {
             } catch (err) {
                 if (err instanceof tinify.AccountError) {
                     // Verify your API key and account limit.
-                    if(!keys){
+                    if (!keys) {
                         //输出文件名 fileInfo.name
                         uploadErrorList.push(fileInfo.name);
                         return;
@@ -83,12 +80,15 @@ module.exports = (compilation, options) => {
     //过滤文件尾缀名称
     let reg = new RegExp("\.(" + options.ext.join('|') + ')$', 'i');
     let keys = options.key;
-
     return co(function * () {
         let imgQueue = getImgQueue(compilation.assets, reg);
         tinify.key = _.first(keys);
         keys = _.drop(keys);
-        let result = yield Promise.all([deImgQueue(imgQueue[0]),deImgQueue(imgQueue[1]),deImgQueue(imgQueue[2])]);
+        let result = yield Promise.all([
+            deImgQueue(imgQueue[0], keys),
+            deImgQueue(imgQueue[1], keys),
+            deImgQueue(imgQueue[2], keys)
+        ]);
         return result;
     });
 };
