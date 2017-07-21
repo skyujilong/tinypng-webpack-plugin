@@ -33,7 +33,6 @@ new tinyPngWebpackPlugin({
 ```
 ### Options Description
 * key: Required, tinyPNG key
-* relativePath: not Required, to your img dir,relative to your webpack output path.
 * ext: not Required, to be compress img ext name.
 
 ### Defaults Options
