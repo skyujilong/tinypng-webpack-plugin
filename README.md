@@ -19,8 +19,7 @@ var tinyPngWebpackPlugin = require('tinypng-webpack-plugin');
     module.exports = {
       plugins: [
           new tinyPngWebpackPlugin({
-              key:"your tinyPNG key",
-              relativePath:"./img/"//can be array,is relative path to output.path
+              key:"your tinyPNG key"
           })
       ]
     }
@@ -29,7 +28,6 @@ var tinyPngWebpackPlugin = require('tinypng-webpack-plugin');
 ```javascript
 new tinyPngWebpackPlugin({
     key:"your tinyPNG key",//can be Array, eg:['your key 1','your key 2'....]
-    relativePath:"./img/",//can be array,is relative path to output.path
     ext: ['png', 'jpeg', 'jpg']//img ext name
 })
 ```
@@ -42,7 +40,6 @@ new tinyPngWebpackPlugin({
 ```javascript
     {
         key:'',
-        relativePath:'./',
         ext: ['png', 'jpeg', 'jpg']
     }
 ```

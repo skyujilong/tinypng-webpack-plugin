@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 const uploader = require('./src/uploader.js');
+const stdout = require('./src/stdout.js');
+
 
 function TinyPNGPlugin(options) {
     this.options = _.assign({
@@ -24,13 +26,19 @@ function TinyPNGPlugin(options) {
 TinyPNGPlugin.prototype.apply = function(compiler) {
     //上传文件操作开始
     compiler.plugin('emit', (compilation, cb) => {
-        uploader(compilation, this.options).then(() => {
+        stdout.render();
+        uploader(compilation, this.options).then((failList) => {
+            stdout.stop();
+            stdout.renderErrorList(failList);
             cb();
         }).catch((e) => {
-            console.log(e.stack);
+            stdout.stop();
+            compiler.errors.push(e);
             cb();
         });
     });
 };
+
+
 
 module.exports = TinyPNGPlugin;

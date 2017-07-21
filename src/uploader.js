@@ -2,6 +2,7 @@
 const co = require('co');
 const _ = require('lodash');
 const tinify = require('tinify');
+const stdout = process.stdout;
 
 function getImgQueue(list, reg) {
     //对应分成三个队列，开启3个线程进行上传
@@ -22,17 +23,15 @@ function getImgQueue(list, reg) {
     return queue;
 }
 
-function upload(){
-    return new Promise((resolve,reject) => {
-
-    });
-}
-
 function deImgQueue(queue,keys) {
     let reTryCount = 3;
+    let uploadErrorList = [];
     return co(function * () {
         function * upload(fileInfo, reTryCount) {
+
             if(reTryCount < 0){
+                //超过尝试次数
+                uploadErrorList.push(fileInfo.name);
                 return;
             }
             try {
@@ -50,8 +49,9 @@ function deImgQueue(queue,keys) {
             } catch (err) {
                 if (err instanceof tinify.AccountError) {
                     // Verify your API key and account limit.
-                    if(keys.length === 0){
-                        //TODO 输出文件名 fileInfo.name
+                    if(!keys){
+                        //输出文件名 fileInfo.name
+                        uploadErrorList.push(fileInfo.name);
                         return;
                     }
                     //tinify key 更换
@@ -68,6 +68,8 @@ function deImgQueue(queue,keys) {
         for (let fileInfo of queue) {
             yield upload(fileInfo, reTryCount);
         }
+
+        return uploadErrorList;
     });
 }
 
@@ -86,6 +88,7 @@ module.exports = (compilation, options) => {
         let imgQueue = getImgQueue(compilation.assets, reg);
         tinify.key = _.first(keys);
         keys = _.drop(keys);
-        yield Promise.all([deImgQueue(imgQueue[0]),deImgQueue(imgQueue[1]),deImgQueue(imgQueue[2])]);
+        let result = yield Promise.all([deImgQueue(imgQueue[0]),deImgQueue(imgQueue[1]),deImgQueue(imgQueue[2])]);
+        return result;
     });
 };
