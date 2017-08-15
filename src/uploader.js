@@ -80,6 +80,10 @@ module.exports = (compilation, options) => {
     //过滤文件尾缀名称
     let reg = new RegExp("\.(" + options.ext.join('|') + ')$', 'i');
     let keys = options.key;
+    if(options.proxy){
+        //这里启用proxy 但是proxy因为建立scoket连接，最后需要有个超时的等待时间来关闭这个scoket
+        tinify.proxy = options.proxy;
+    }
     return co(function * () {
         let imgQueue = getImgQueue(compilation.assets, reg);
         tinify.key = _.first(keys);

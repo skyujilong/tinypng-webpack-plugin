@@ -8,7 +8,8 @@ const stdout = require('./src/stdout.js');
 function TinyPNGPlugin(options) {
     this.options = _.assign({
         key: '',
-        ext: ['png', 'jpeg', 'jpg']
+        ext: ['png', 'jpeg', 'jpg'],
+        proxy:''
     }, options);
 
     if (!this.options.key) {
@@ -17,6 +18,12 @@ function TinyPNGPlugin(options) {
 
     if (_.isString(this.options.key)) {
         this.options.key = [this.options.key];
+    }
+
+    if(_.isString(this.options.proxy) && this.options.proxy !== ''){
+        if(this.options.proxy.indexOf('http://') === -1){
+            throw new Error('the proxy must be HTTP proxy!')
+        }
     }
 
     //正则表达式筛选图片
