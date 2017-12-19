@@ -3,6 +3,12 @@ const co = require('co');
 const _ = require('lodash');
 const tinify = require('tinify');
 const stdout = process.stdout;
+const fs = require('fs');
+const md5 = require('md5');
+const path = require('path');
+const readline = require('readline');
+
+let dict = {}, appendDict = {};
 
 function getImgQueue(list, reg) {
     //对应分成三个队列，开启3个线程进行上传
@@ -20,17 +26,42 @@ function getImgQueue(list, reg) {
     return queue;
 }
 
+/**
+ * 写操作，将压缩后的图片存储在一个固定的位置
+ * @param {*} md5 压缩前 md5指纹
+ * @param {*} imgBuffer 图片文件留
+ */
+function writeImg(imgBuffer,md5){
+    return new Promise(function(resolve,reject){
+        //获取md5值
+        let filePath = path.resolve(__dirname, 'mapImg', md5);
+        fs.writeFile(filePath,function(err){
+            if(err){
+                reject(err);
+            }else{
+                resolve(filePath);
+            }
+        });
+    });
+}
+
+
+
+
+
 function deImgQueue(queue, keys) {
     let reTryCount = 3;
     let uploadErrorList = [];
     return co(function * () {
         function * upload(fileInfo, reTryCount) {
-
             if (reTryCount < 0) {
                 //超过尝试次数
                 uploadErrorList.push(fileInfo.name);
                 return;
             }
+
+            //TODO: 添加缓存，防止多次走服务器 md5
+            let fileMd5 = md5(fileInfo.source.source());
             try {
                 let compressImg = yield new Promise((resolve, reject) => {
                     tinify.fromBuffer(fileInfo.source.source()).toBuffer((err, resultData) => {
@@ -43,6 +74,9 @@ function deImgQueue(queue, keys) {
                 });
                 //压缩图片成功
                 fileInfo.source._value = compressImg;
+                // 缓存压缩后的文件
+                let filePath = yield writeImg(compressImg,fileMd5);
+                appendDict[md5] = filePath;
             } catch (err) {
                 if (err instanceof tinify.AccountError) {
                     // Verify your API key and account limit.
@@ -71,6 +105,49 @@ function deImgQueue(queue, keys) {
 }
 
 /**
+ * 
+ */
+function* initDict(){
+    let dictPath = path.resolve(__dirname,'../map/dict');
+    yield new Promise(function (resolve, reject) {
+        const rl = readline.createInterface({
+            input: fs.createReadStream(dictPath)
+        });
+        rl.on('line', function (line) {
+            //给dict对象 添加属性与对应的值
+            if(line && line.indexOf(':')>=0){
+                let list = line.split(':');
+                dict[list[0]]= list[1];
+            }
+        });
+        rl.on('close', function () {
+            resolve(dict);
+        })
+    });
+}
+
+/**
+ * 将appendDict内容导入到dict文件中
+ */
+function* appendDictFile(){
+    let dictPath = path.resolve(__dirname, '../map/dict');
+    function append(filePath,data){
+        return new Promise(function(resolve,reject){
+            fs.appendFile(filePath,data,function(err){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(resolve);
+                }
+            });
+        });
+    }
+    for (let key in appendDict) {
+        yield append(dictPath,key + ':' + appendDict[key] + '\n');
+    }
+}
+
+/**
  * 进行图片上传主操作
  * @param  {[type]} compilation     [webpack 构建对象]
  * @param  {[type]} options         [选项]
@@ -85,6 +162,8 @@ module.exports = (compilation, options) => {
         tinify.proxy = options.proxy;
     }
     return co(function * () {
+        //初始化字典
+        dict = yield initDict;
         let imgQueue = getImgQueue(compilation.assets, reg);
         tinify.key = _.first(keys);
         keys = _.drop(keys);
@@ -93,6 +172,8 @@ module.exports = (compilation, options) => {
             deImgQueue(imgQueue[1], keys),
             deImgQueue(imgQueue[2], keys)
         ]);
+        //TODO: 将appendDict 保存到dict文件中
+        yield appendDictFile;
         return result;
     });
 };
