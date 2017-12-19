@@ -35,13 +35,13 @@ function getImgQueue(list, reg) {
 /**
  * 写操作，将压缩后的图片存储在一个固定的位置
  * @param {*} md5 压缩前 md5指纹
- * @param {*} imgBuffer 图片文件留
+ * @param {*} imgBuffer 压缩后的 img buffer
  */
-function writeImg(imgBuffer, md5) {
-    return new Promise(function (resolve, reject) {
+function* writeImg(imgBuffer, md5) {
+    let filePath = yield new Promise(function (resolve, reject) {
         //获取md5值
-        let filePath = path.resolve(__dirname, 'mapImg', md5);
-        fs.writeFile(filePath, function (err) {
+        let filePath = path.resolve(__dirname, '../map', md5);
+        fs.writeFile(filePath, imgBuffer, function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -49,6 +49,7 @@ function writeImg(imgBuffer, md5) {
             }
         });
     });
+    return filePath;
 }
 
 function deImgQueue(queue, keys) {
@@ -64,19 +65,23 @@ function deImgQueue(queue, keys) {
 
             // 添加缓存，防止多次走服务器 md5
             let fileMd5 = md5(fileInfo.source.source());
-            if(dict[fileMd5]){
-                //找到对应的文件流，加入到fileInfo.source._value中
-                let compressBuffer = yield new Promise(function(resolve,reject){
-                    fs.readFile(dict[fileMd5],function(err,buffer){
-                        if(err){
-                            reject(err);
-                        }else{
-                            resolve(buffer);
-                        }
-                    })
-                });
-                fileInfo.source._value = compressBuffer;
-                return;
+            try {
+                if (dict[fileMd5]) {
+                    //找到对应的文件流，加入到fileInfo.source._value中
+                    let compressBuffer = yield new Promise(function (resolve, reject) {
+                        fs.readFile(dict[fileMd5], function (err, buffer) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(buffer);
+                            }
+                        })
+                    });
+                    fileInfo.source._value = compressBuffer;
+                    return;
+                }
+            } catch (e) {
+                throw e;
             }
 
             try {
@@ -92,13 +97,8 @@ function deImgQueue(queue, keys) {
                 //压缩图片成功
                 fileInfo.source._value = compressImg;
                 // 缓存压缩后的文件
-                try{
-                    let filePath = yield writeImg(compressImg, fileMd5);
-                    appendDict[md5] = filePath;
-                }catch(e){
-                    
-                }
-                
+                let filePath = yield writeImg(compressImg, fileMd5);
+                appendDict[fileMd5] = filePath;
             } catch (err) {
                 if (err instanceof tinify.AccountError) {
                     // Verify your API key and account limit.
@@ -153,6 +153,7 @@ function* initDict() {
  */
 function* appendDictFile() {
     let dictPath = path.resolve(__dirname, '../map/dict');
+
     function append(filePath, data) {
         return new Promise(function (resolve, reject) {
             fs.appendFile(filePath, data, function (err) {
@@ -185,7 +186,7 @@ module.exports = (compilation, options) => {
     }
     return co(function* () {
         //初始化字典
-        dict = yield initDict;
+        yield initDict;
         let imgQueue = getImgQueue(compilation.assets, reg);
         tinify.key = _.first(keys);
         keys = _.drop(keys);
@@ -194,7 +195,8 @@ module.exports = (compilation, options) => {
             deImgQueue(imgQueue[1], keys),
             deImgQueue(imgQueue[2], keys)
         ]);
-        //TODO: 将appendDict 保存到dict文件中
+
+        //将appendDict 保存到dict文件中
         yield appendDictFile;
         return result;
     });
