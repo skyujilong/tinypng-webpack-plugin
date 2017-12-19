@@ -11,7 +11,7 @@
         "tinify": "^1.5.0",
         "colors": "^1.1.2",
         "co": "^4.6.0",
-        "progress": "*"
+        "md5":"^2.2.1"
     },
     "repository": {
         "type": "git",
