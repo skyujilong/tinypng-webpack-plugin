@@ -9,7 +9,8 @@ const path = require('path');
 const readline = require('readline');
 
 let dict = {},
-    appendDict = {};
+    appendDict = {},
+    splitCode = "$$$";
 
 function getImgQueue(list, reg) {
     //对应分成三个队列，开启3个线程进行上传
@@ -127,7 +128,7 @@ function deImgQueue(queue, keys) {
 }
 
 /**
- * 
+ * 初始化字典对象
  */
 function* initDict() {
     let dictPath = path.resolve(__dirname, '../map/dict');
@@ -137,8 +138,8 @@ function* initDict() {
         });
         rl.on('line', function (line) {
             //给dict对象 添加属性与对应的值
-            if (line && line.indexOf(':') >= 0) {
-                let list = line.split(':');
+            if (line && line.indexOf(splitCode) >= 0) {
+                let list = line.split(splitCode);
                 dict[list[0]] = list[1];
             }
         });
@@ -166,7 +167,7 @@ function* appendDictFile() {
         });
     }
     for (let key in appendDict) {
-        yield append(dictPath, key + ':' + appendDict[key] + '\n');
+        yield append(dictPath, key + splitCode + appendDict[key] + '\n');
     }
 }
 
