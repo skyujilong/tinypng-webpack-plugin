@@ -1,6 +1,6 @@
 {
     "name": "tinypng-webpack-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "a webpack plugin use tinyPNG",
     "main": "index.js",
     "scripts": {
