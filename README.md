@@ -7,8 +7,13 @@ a img compress plugin use with tinyPNG for webpack.
 [link](https://tinypng.com/developers)
 
 ## Installation
+```shell
+# for webpack 4
+$ npm install tinypng-webpack-plugin --save-dev
 
-`$ npm install tinypng-webpack-plugin --save-dev`
+# for webpack 3 & 2 & 1
+$ npm install tinypng-webpack-plugin@1.0.2 --save-dev
+```
 
 ## Example Webpack Config
 
